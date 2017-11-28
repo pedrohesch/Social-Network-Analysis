@@ -10,10 +10,10 @@ library(devtools)
 
 # Criando autenticação no Twitter
 
-api_key <- "ryMTtqouq3iDTmwi8saGPKGXX"
-api_secret <- "rzTsZULivNYa2UPBcpfAIGNLwEMdBBiCD9B5jYJDzw7JX7e61F"
-access_token <- "903682863568171009-Jj3eEwnhjmu51Ubv8p9OYUjrKWxFy7a"
-access_token_secret <- "8ZXrpx3bRykhgCU4kGkwRredI5ZL3XGriybpkqb2upEtj"
+api_key <- "xxx"
+api_secret <- "yyy"
+access_token <- "zzz"
+access_token_secret <- "www"
 
 # Autenticando no Twitter
 setup_twitter_oauth(api_key, api_secret, access_token, access_token_secret)
