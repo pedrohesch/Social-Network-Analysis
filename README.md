@@ -4,5 +4,6 @@ This is a work of social network analysis - Twitter. The idea was to generate so
 
 In this repositorie you will find:
 
-1- Twitter_Analysis_en.R = The R code for the task;
-2- Twitter_Analysis_en_Report.pdf = A complete report with the code run, comments and results;
+1- Twitter_Analysis_en.R = The R code for the task.
+
+2- Twitter_Analysis_en_Report.pdf = A complete report with the code run, comments and results.
