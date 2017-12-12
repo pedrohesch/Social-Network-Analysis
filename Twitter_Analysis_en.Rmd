@@ -1,0 +1,319 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
+---
+title: "Twitter Sentiment Analysis"
+author: "Pedro Schneider"
+date: "24 de novembro de 2017"
+output:
+  word_document: default
+ ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This is a work of social network analysis - Twitter. The idea was to generate some information from the analysis of sentiments. Sports brands related to Tennis sport (one of the author's hobbies) were used as Twitter search terms. First was generated a visualization through the wordcloud format and then attributed positive and negative scores to the tweets for a classification and comparison between brands.
+
+## Packages and Authentication
+
+NOTE: Credentials must be entered according to each user's individual credentials.
+
+```{r setup inicial}
+
+# Installing and Loading the twitteR Package
+
+#install.packages("twitteR")
+#install.packages("httr")
+#install.packages("devtools")
+library(twitteR)
+library(httr)
+library(devtools)
+
+# Creating Authentication on Twitter
+
+api_key <- "ryMTtqouq3iDTmwi8saGPKGXX"
+api_secret <- "rzTsZULivNYa2UPBcpfAIGNLwEMdBBiCD9B5jYJDzw7JX7e61F"
+access_token <- "903682863568171009-Jj3eEwnhjmu51Ubv8p9OYUjrKWxFy7a"
+access_token_secret <- "8ZXrpx3bRykhgCU4kGkwRredI5ZL3XGriybpkqb2upEtj"
+
+# Authenticating on Twitter
+
+setup_twitter_oauth(api_key, api_secret, access_token, access_token_secret)
+
+
+```
+
+## Capturing tweets and performing cleanups
+
+```{r captura de tweets}
+
+# Capturing Tweets
+
+wilson_tweets = searchTwitter("Wilson Tennis", n = 500, lang = "en")
+nike_tweets = searchTwitter("NikeCourt", n = 500, lang = "en")
+head_tweets = searchTwitter("Head Tennis", n = 500, lang = "en")
+babolat_tweets = searchTwitter("Babolat", n = 500, lang = "en")
+
+# Viewing the first lines of the tweets object
+
+head(wilson_tweets)
+head(nike_tweets)
+head(head_tweets)
+head(babolat_tweets)
+
+# Installing the package for Text Mining.
+
+#install.packages("tm")
+#install.packages("SnowballC")
+library(SnowballC)
+library(tm)
+
+# Treatment (cleaning, organization and transformation) of collected data
+
+wilson_tweetlist <- sapply(wilson_tweets, function(x) x$getText())
+wilson_tweetcorpus <- Corpus(VectorSource(wilson_tweetlist))
+toSpace <- content_transformer(function(x, pattern) gsub(pattern, " ", x))
+wilson_tweetcorpus <- tm_map(wilson_tweetcorpus, toSpace, "/")
+wilson_tweetcorpus <- tm_map(wilson_tweetcorpus, toSpace, "@")
+wilson_tweetcorpus <- tm_map(wilson_tweetcorpus, toSpace, "\\|")
+wilson_tweetcorpus <- tm_map(wilson_tweetcorpus, toSpace, "/|@|\\|")
+wilson_tweetcorpus <- tm_map(wilson_tweetcorpus, removeNumbers)
+wilson_tweetcorpus <- tm_map(wilson_tweetcorpus, removePunctuation)
+wilson_tweetcorpus <- tm_map(wilson_tweetcorpus, toSpace, "\n")
+wilson_tweetcorpus <- tm_map(wilson_tweetcorpus, function(x)removeWords(x, stopwords("english")))
+wilson_tweetcorpus <- tm_map(wilson_tweetcorpus, removeWords, c("https","tco"))
+wilson_tweetcorpus <- tm_map(wilson_tweetcorpus, stripWhitespace)
+#wilson_tweetcorpus <- sapply(wilson_tweetcorpus,function(row) iconv(row, "latin1", "ASCII", sub=""))
+wilson_tweetcorpus <- tm_map(wilson_tweetcorpus, content_transformer(tolower))
+
+nike_tweetlist <- sapply(nike_tweets, function(x) x$getText())
+nike_tweetcorpus <- Corpus(VectorSource(nike_tweetlist))
+toSpace <- content_transformer(function(x, pattern) gsub(pattern, " ", x))
+nike_tweetcorpus <- tm_map(nike_tweetcorpus, toSpace, "/")
+nike_tweetcorpus <- tm_map(nike_tweetcorpus, toSpace, "@")
+nike_tweetcorpus <- tm_map(nike_tweetcorpus, toSpace, "\\|")
+nike_tweetcorpus <- tm_map(nike_tweetcorpus, toSpace, "/|@|\\|")
+nike_tweetcorpus <- tm_map(nike_tweetcorpus, removeNumbers)
+nike_tweetcorpus <- tm_map(nike_tweetcorpus, removePunctuation)
+nike_tweetcorpus <- tm_map(nike_tweetcorpus, toSpace, "\n")
+nike_tweetcorpus <- tm_map(nike_tweetcorpus, function(x)removeWords(x, stopwords("portuguese")))
+nike_tweetcorpus <- tm_map(nike_tweetcorpus, removeWords, c("https","tco"))
+nike_tweetcorpus <- tm_map(nike_tweetcorpus, stripWhitespace)
+nike_tweetcorpus <- sapply(nike_tweetcorpus,function(row) iconv(row, "latin1", "ASCII", sub=""))
+#nike_tweetcorpus <- tm_map(nike_tweetcorpus, content_transformer(tolower))
+
+head_tweetlist <- sapply(head_tweets, function(x) x$getText())
+head_tweetcorpus <- Corpus(VectorSource(head_tweetlist))
+toSpace <- content_transformer(function(x, pattern) gsub(pattern, " ", x))
+head_tweetcorpus <- tm_map(head_tweetcorpus, toSpace, "/")
+head_tweetcorpus <- tm_map(head_tweetcorpus, toSpace, "@")
+head_tweetcorpus <- tm_map(head_tweetcorpus, toSpace, "\\|")
+head_tweetcorpus <- tm_map(head_tweetcorpus, toSpace, "/|@|\\|")
+head_tweetcorpus <- tm_map(head_tweetcorpus, removeNumbers)
+head_tweetcorpus <- tm_map(head_tweetcorpus, removePunctuation)
+head_tweetcorpus <- tm_map(head_tweetcorpus, toSpace, "\n")
+head_tweetcorpus <- tm_map(head_tweetcorpus, function(x)removeWords(x, stopwords("portuguese")))
+head_tweetcorpus <- tm_map(head_tweetcorpus, removeWords, c("https","tco"))
+head_tweetcorpus <- tm_map(head_tweetcorpus, stripWhitespace)
+head_tweetcorpus <- sapply(head_tweetcorpus,function(row) iconv(row, "latin1", "ASCII", sub=""))
+#head_tweetcorpus <- tm_map(head_tweetcorpus, content_transformer(tolower))
+
+babolat_tweetlist <- sapply(babolat_tweets, function(x) x$getText())
+babolat_tweetcorpus <- Corpus(VectorSource(babolat_tweetlist))
+toSpace <- content_transformer(function(x, pattern) gsub(pattern, " ", x))
+babolat_tweetcorpus <- tm_map(babolat_tweetcorpus, toSpace, "/")
+babolat_tweetcorpus <- tm_map(babolat_tweetcorpus, toSpace, "@")
+babolat_tweetcorpus <- tm_map(babolat_tweetcorpus, toSpace, "\\|")
+babolat_tweetcorpus <- tm_map(babolat_tweetcorpus, toSpace, "/|@|\\|")
+babolat_tweetcorpus <- tm_map(babolat_tweetcorpus, removeNumbers)
+babolat_tweetcorpus <- tm_map(babolat_tweetcorpus, removePunctuation)
+babolat_tweetcorpus <- tm_map(babolat_tweetcorpus, toSpace, "\n")
+babolat_tweetcorpus <- tm_map(babolat_tweetcorpus, function(x)removeWords(x, stopwords("portuguese")))
+babolat_tweetcorpus <- tm_map(babolat_tweetcorpus, removeWords, c("https","tco"))
+babolat_tweetcorpus <- tm_map(babolat_tweetcorpus, stripWhitespace)
+babolat_tweetcorpus <- sapply(babolat_tweetcorpus,function(row) iconv(row, "latin1", "ASCII", sub=""))
+#babolat_tweetcorpus <- tm_map(babolat_tweetcorpus, content_transformer(tolower))
+
+
+```
+## Viewing with WordCloud
+
+```{r visualização}
+
+# Installing the wordcloud package
+
+#install.packages("RColorBrewer")
+#install.packages("wordcloud")
+library(RColorBrewer)
+library(wordcloud)
+
+# Generating a cloud words
+
+pal2 <- brewer.pal(8,"Dark2")
+wordcloud(wilson_tweetcorpus, 
+          min.freq = 2, 
+          scale = c(3,1), 
+          random.color = F, 
+          max.word = 60, 
+          random.order = F,
+          colors = pal2)
+
+pal2 <- brewer.pal(8,"Dark2")
+wordcloud(nike_tweetcorpus, 
+          min.freq = 2, 
+          scale = c(3,1), 
+          random.color = F, 
+          max.word = 60, 
+          random.order = F,
+          colors = pal2)
+
+pal2 <- brewer.pal(8,"Dark2")
+wordcloud(head_tweetcorpus, 
+          min.freq = 2, 
+          scale = c(3,1), 
+          random.color = F, 
+          max.word = 60, 
+          random.order = F,
+          colors = pal2)
+
+pal2 <- brewer.pal(8,"Dark2")
+wordcloud(babolat_tweetcorpus, 
+          min.freq = 2, 
+          scale = c(3,1), 
+          random.color = F, 
+          max.word = 60, 
+          random.order = F,
+          colors = pal2)
+
+```
+## Sentiment Analysis
+
+```{r analise de sentimento}
+
+# Customized function for sentiment analysis evaluation
+
+#install.packages("stringr")
+#install.packages("plyr")
+library(stringr)
+library(plyr)
+
+sentimento.score = function(sentences, pos.words, neg.words, .progress = 'none')
+{
+  
+  # Criando um array de scores com lapply
+  scores = laply(sentences,
+                 function(sentence, pos.words, neg.words)
+                 {
+                   sentence = gsub("[[:punct:]]", "", sentence)
+                   sentence = gsub("[[:cntrl:]]", "", sentence)
+                   sentence =gsub('\\d+', '', sentence)
+                   tryTolower = function(x)
+                   {
+                     y = NA
+                     try_error = tryCatch(tolower(x), error=function(e) e)
+                     if (!inherits(try_error, "error"))
+                       y = tolower(x)
+                     return(y)
+                   }
+                   
+                   sentence = sapply(sentence, tryTolower)
+                   word.list = str_split(sentence, "\\s+")
+                   words = unlist(word.list)
+                   pos.matches = match(words, pos.words)
+                   neg.matches = match(words, neg.words)
+                   pos.matches = !is.na(pos.matches)
+                   neg.matches = !is.na(neg.matches)
+                   score = sum(pos.matches) - sum(neg.matches)
+                   return(score)
+                 }, pos.words, neg.words, .progress = .progress )
+  
+  scores.df = data.frame(text = sentences, score = scores)
+  return(scores.df)
+}
+
+# Mapping positive and negative words
+
+pos = readLines("palavras_positivas.txt")
+neg = readLines("palavras_negativas.txt")
+
+
+# Getting text
+
+wilson_txt = sapply(wilson_tweets, function(x) x$getText())
+nike_txt = sapply(nike_tweets, function(x) x$getText())
+head_txt = sapply(head_tweets, function(x) x$getText())
+babolat_txt = sapply(babolat_tweets, function(x) x$getText())
+
+# Trademark tweets vector
+
+nd = c(length(wilson_txt), length(nike_txt), length(head_txt), length(babolat_txt))
+
+
+# Gathering the texts
+
+brands = c(wilson_txt, nike_txt, head_txt, babolat_txt) 
+
+# Applying function to calculate the Sentiment score
+
+scores = sentimento.score(brands, pos, neg, .progress = 'text')
+
+# Calculating the score by brand
+
+scores$brand = factor(rep(c("wilson", "nike", "head", "babolat"), nd))
+scores$muito.pos = as.numeric(scores$score >= 2)
+scores$muito.neg = as.numeric(scores$score <= -2)
+
+# Calculating the total
+
+numpos = sum(scores$muito.pos)
+numneg = sum(scores$muito.neg)
+
+# Score global
+
+global_score = round( 100 * numpos / (numpos + numneg) )
+
+```
+## Sentiment Scores - Visualizations
+
+
+```{r sentimento viz}
+
+# colors
+cols = c("#7CAE00", "#00BFC4", "#F8766D", "#C77CFF")
+names(cols) = c("wilson", "nike", "head", "babolat")
+
+# boxplot
+
+#install.packages("ggplot2")
+library(ggplot2)
+
+ggplot(scores, aes(x=brand, y=score, group=brand)) +
+  geom_boxplot(aes(fill=brand)) +
+  scale_fill_manual(values=cols) +
+  geom_jitter(colour="gray40",
+              position=position_jitter(width=0.2), alpha=0.3)
+#opts(title = "Boxplot - brands Sentiment Scores")
+
+# Generating a histogram with lattice
+#install.packages("lattice")
+library("lattice")
+histogram(data = scores, ~score|brand, main = "Sentiment Analysis", xlab = "", sub = "Score")
+
+
+# barplot of average score
+meanscore = tapply(scores$score, scores$brand, mean)
+df = data.frame(brand=names(meanscore), meanscore=meanscore)
+df$brands <- reorder(df$brand, df$meanscore)
+
+f <- ggplot(df, aes(df$brand, df$meanscore)) 
+f + geom_bar(stat= "identity",aes(color=brand,fill=brand))
+
+
+```
+
+
