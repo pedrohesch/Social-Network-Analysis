@@ -7,3 +7,5 @@ In this repositorie you will find:
 1- Twitter_Analysis_en.R = The R code for the task.
 
 2- Twitter_Analysis_en_Report.pdf = A complete report with the code run, comments and results.
+
+3- Twitter_Analysis_en.Rmd = The R Mardown file to create the pdf report.
